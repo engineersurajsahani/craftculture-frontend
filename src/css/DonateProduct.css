@@ -1,0 +1,78 @@
+/* Container for the entire page */
+.donate-money-page {
+  background-color: #f7f7f7;
+  padding: 20px;
+}
+
+/* Popup container */
+.thank-you-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.popup-content {
+  background-color: #fff;
+  padding: 20px;
+  text-align: center;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 100%;
+}
+
+.thank-you-icon {
+  font-size: 50px;
+  color: #28a745;
+  margin-bottom: 20px;
+}
+
+.popup-content h3 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: #28a745;
+}
+
+.popup-content p {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.popup-content button {
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.popup-content button:hover {
+  background-color: #218838;
+}
+
+/* For mobile screens */
+@media (max-width: 767px) {
+  .popup-content {
+    width: 80%;
+  }
+
+  .thank-you-icon {
+    font-size: 40px;
+  }
+
+  .popup-content h3 {
+    font-size: 20px;
+  }
+
+  .popup-content p {
+    font-size: 16px;
+  }
+}

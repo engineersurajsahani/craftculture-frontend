@@ -1,0 +1,16 @@
+.register-page {
+  background-color: #f9f9f9;
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.register-form {
+  max-width: 400px;
+  background-color: #fff;
+}
+
+.text-danger {
+  font-size: 0.9rem;
+}

@@ -1,0 +1,32 @@
+/* Parallax Effect */
+.parallax-section {
+  background-image: url("../../public/images/parallex.png");
+  height: 100vh;
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+}
+
+.parallax-cta {
+  background-image: url("../../public/images/parallex.png");
+  height: 60vh;
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.text-white h1,
+.text-white p,
+.btn {
+  animation: fadeIn 2s ease-in-out;
+}

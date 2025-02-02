@@ -1,0 +1,46 @@
+/* Donation Page */
+.donate-money-page {
+  background: #f8f9fa;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.donate-form {
+  max-width: 400px;
+  background: #ffffff;
+  border-radius: 8px;
+}
+
+/* Popup Styling */
+.thank-you-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.popup-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  width: 300px;
+}
+
+.thank-you-icon {
+  font-size: 50px;
+  margin-bottom: 15px;
+}
+
+.popup-content button {
+  margin-top: 15px;
+}
