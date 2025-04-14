@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_URL } from "../constant";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -9,6 +11,13 @@ const Checkout = () => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState({
+    cardNumber: "",
+    expiryDate: "",
+    cvv: "",
+  });
+  const [paymentErrors, setPaymentErrors] = useState({});
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -20,7 +29,7 @@ const Checkout = () => {
       postalCode: "",
       country: "India",
     },
-    paymentMethod: "Online",
+    paymentMethod: "COD",
   });
 
   useEffect(() => {
@@ -87,6 +96,28 @@ const Checkout = () => {
     return Object.keys(errors).length === 0;
   };
 
+  const validatePaymentDetails = () => {
+    const errors = {};
+    const cardRegex = /^\d{16}$/;
+    const expiryRegex = /^(0[1-9]|1[0-2])\/?([0-9]{2})$/;
+    const cvvRegex = /^\d{3,4}$/;
+
+    if (!cardRegex.test(paymentDetails.cardNumber.replace(/\s/g, ""))) {
+      errors.cardNumber = "Invalid card number (16 digits required)";
+    }
+
+    if (!expiryRegex.test(paymentDetails.expiryDate)) {
+      errors.expiryDate = "Invalid expiry date (MM/YY format)";
+    }
+
+    if (!cvvRegex.test(paymentDetails.cvv)) {
+      errors.cvv = "Invalid CVV (3-4 digits required)";
+    }
+
+    setPaymentErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name.includes(".")) {
@@ -113,6 +144,21 @@ const Checkout = () => {
     }
   };
 
+  const handlePaymentInputChange = (e) => {
+    const { name, value } = e.target;
+    setPaymentDetails((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    // Clear validation error when user starts typing
+    if (paymentErrors[name]) {
+      setPaymentErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -120,6 +166,24 @@ const Checkout = () => {
       return;
     }
 
+    if (formData.paymentMethod === "Online") {
+      setShowPaymentModal(true);
+      return;
+    }
+
+    await placeOrder();
+  };
+
+  const handlePaymentSubmit = async () => {
+    if (!validatePaymentDetails()) {
+      return;
+    }
+
+    setShowPaymentModal(false);
+    await placeOrder();
+  };
+
+  const placeOrder = async () => {
     setLoading(true);
 
     try {
@@ -137,6 +201,12 @@ const Checkout = () => {
         })),
         totalAmount,
         status: "Pending",
+        paymentDetails: formData.paymentMethod === "Online" ? {
+          ...paymentDetails,
+          status: "Completed",
+        } : {
+          status: "Pending",
+        },
       };
 
       const response = await axios.post(`${API_URL}/api/orders`, orderData);
@@ -390,6 +460,103 @@ const Checkout = () => {
           </div>
         </div>
       </div>
+
+      {/* Payment Modal */}
+      <Modal show={showPaymentModal} onHide={() => setShowPaymentModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Payment Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="mb-3">
+            <label htmlFor="cardNumber" className="form-label">
+              Card Number
+            </label>
+            <input
+              type="text"
+              className={`form-control ${
+                paymentErrors.cardNumber ? "is-invalid" : ""
+              }`}
+              id="cardNumber"
+              name="cardNumber"
+              placeholder="1234 5678 9012 3456"
+              value={paymentDetails.cardNumber}
+              onChange={handlePaymentInputChange}
+              maxLength="19"
+            />
+            {paymentErrors.cardNumber && (
+              <div className="invalid-feedback">
+                {paymentErrors.cardNumber}
+              </div>
+            )}
+          </div>
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <label htmlFor="expiryDate" className="form-label">
+                Expiry Date (MM/YY)
+              </label>
+              <input
+                type="text"
+                className={`form-control ${
+                  paymentErrors.expiryDate ? "is-invalid" : ""
+                }`}
+                id="expiryDate"
+                name="expiryDate"
+                placeholder="MM/YY"
+                value={paymentDetails.expiryDate}
+                onChange={handlePaymentInputChange}
+                maxLength="5"
+              />
+              {paymentErrors.expiryDate && (
+                <div className="invalid-feedback">
+                  {paymentErrors.expiryDate}
+                </div>
+              )}
+            </div>
+            <div className="col-md-6">
+              <label htmlFor="cvv" className="form-label">
+                CVV
+              </label>
+              <input
+                type="text"
+                className={`form-control ${
+                  paymentErrors.cvv ? "is-invalid" : ""
+                }`}
+                id="cvv"
+                name="cvv"
+                placeholder="123"
+                value={paymentDetails.cvv}
+                onChange={handlePaymentInputChange}
+                maxLength="4"
+              />
+              {paymentErrors.cvv && (
+                <div className="invalid-feedback">{paymentErrors.cvv}</div>
+              )}
+            </div>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowPaymentModal(false)}
+          >
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handlePaymentSubmit}>
+            {loading ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Processing...
+              </>
+            ) : (
+              "Confirm Payment"
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
