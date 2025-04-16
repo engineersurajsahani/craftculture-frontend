@@ -108,6 +108,21 @@ const Checkout = () => {
 
     if (!expiryRegex.test(paymentDetails.expiryDate)) {
       errors.expiryDate = "Invalid expiry date (MM/YY format)";
+    } else {
+      // Check if expiry date is in the past
+      const [month, year] = paymentDetails.expiryDate.split("/");
+      const currentYear = new Date().getFullYear() % 100; // Get last 2 digits
+      const currentMonth = new Date().getMonth() + 1; // Months are 0-indexed
+
+      const expiryYear = parseInt(year, 10);
+      const expiryMonth = parseInt(month, 10);
+
+      if (
+        expiryYear < currentYear ||
+        (expiryYear === currentYear && expiryMonth < currentMonth)
+      ) {
+        errors.expiryDate = "Card has expired";
+      }
     }
 
     if (!cvvRegex.test(paymentDetails.cvv)) {
@@ -146,10 +161,32 @@ const Checkout = () => {
 
   const handlePaymentInputChange = (e) => {
     const { name, value } = e.target;
+
+    let formattedValue = value;
+
+    if (name === "expiryDate") {
+      // Auto-insert slash after 2 digits
+      formattedValue = value
+        .replace(/\D/g, "") // Remove non-digits
+        .replace(/^(\d{2})/, "$1/") // Add slash after 2 digits
+        .substring(0, 5); // Limit to MM/YY format
+    } else if (name === "cardNumber") {
+      // Add spaces every 4 digits for better readability
+      formattedValue = value
+        .replace(/\D/g, "")
+        .replace(/(\d{4})/g, "$1 ")
+        .trim()
+        .substring(0, 19);
+    } else if (name === "cvv") {
+      // Limit CVV to 4 digits
+      formattedValue = value.replace(/\D/g, "").substring(0, 4);
+    }
+
     setPaymentDetails((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: formattedValue,
     }));
+
     // Clear validation error when user starts typing
     if (paymentErrors[name]) {
       setPaymentErrors((prev) => ({
@@ -201,12 +238,15 @@ const Checkout = () => {
         })),
         totalAmount,
         status: "Pending",
-        paymentDetails: formData.paymentMethod === "Online" ? {
-          ...paymentDetails,
-          status: "Completed",
-        } : {
-          status: "Pending",
-        },
+        paymentDetails:
+          formData.paymentMethod === "Online"
+            ? {
+                ...paymentDetails,
+                status: "Completed",
+              }
+            : {
+                status: "Pending",
+              },
       };
 
       const response = await axios.post(`${API_URL}/api/orders`, orderData);
@@ -484,9 +524,7 @@ const Checkout = () => {
               maxLength="19"
             />
             {paymentErrors.cardNumber && (
-              <div className="invalid-feedback">
-                {paymentErrors.cardNumber}
-              </div>
+              <div className="invalid-feedback">{paymentErrors.cardNumber}</div>
             )}
           </div>
           <div className="row mb-3">
